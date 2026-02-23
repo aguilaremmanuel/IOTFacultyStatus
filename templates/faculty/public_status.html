@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty Status - SFSI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .search-box {
+        max-width: 500px;
+        margin: 0 auto 2rem;
+    }
+
+    .search-box form {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .search-box input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #4fc3f7;
+    }
+
+    .status-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .teacher-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .teacher-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .teacher-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .teacher-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .teacher-name {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .teacher-department {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .status-available {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+
+    .status-busy {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    .status-not_present {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .auto-refresh {
+        text-align: center;
+        margin-top: 2rem;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Faculty Status</h1>
+    <p>Check real-time availability of faculty members</p>
+</div>
+
+<div class="search-box">
+    <form method="GET">
+        <input type="text" name="search" placeholder="Search by name or department..." value="{{ search_query }}">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+<div class="status-legend">
+    <div class="legend-item">
+        <span class="legend-dot" style="background: #28a745;"></span>
+        <span>Available</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background: #ffc107;"></span>
+        <span>Busy</span>
+    </div>
+    <div class="legend-item">
+        <span class="legend-dot" style="background: #dc3545;"></span>
+        <span>Not Present</span>
+    </div>
+</div>
+
+{% if teachers %}
+<div class="teacher-grid">
+    {% for teacher in teachers %}
+    <div class="teacher-card">
+        <div class="teacher-header">
+            <div>
+                <div class="teacher-name">{{ teacher.user.get_full_name|default:teacher.user.username }}</div>
+                {% if teacher.department %}
+                <div class="teacher-department">{{ teacher.department }}</div>
+                {% endif %}
+                {% if teacher.position %}
+                <div class="teacher-department">{{ teacher.position }}</div>
+                {% endif %}
+            </div>
+            <span class="status-badge status-{{ teacher.status }}">
+                {{ teacher.get_status_display }}
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="no-results">
+    <p>No faculty members found.</p>
+</div>
+{% endif %}
+
+<div class="auto-refresh">
+    Page auto-refreshes every 30 seconds
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh page every 30 seconds
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

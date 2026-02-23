@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Status Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #4fc3f7;
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+        }
+
+        .clock {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.3rem;
+        }
+
+        .legend-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .teacher-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+        }
+
+        .teacher-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border-left: 6px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .teacher-card.available {
+            border-left-color: #28a745;
+        }
+
+        .teacher-card.busy {
+            border-left-color: #ffc107;
+        }
+
+        .teacher-card.not_present {
+            border-left-color: #dc3545;
+        }
+
+        .teacher-info {
+            flex: 1;
+        }
+
+        .teacher-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .teacher-department {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-indicator.available {
+            background: rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+
+        .status-indicator.busy {
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        .status-indicator.not_present {
+            background: rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+
+        .status-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.available {
+            background: #28a745;
+        }
+
+        .status-dot.busy {
+            background: #ffc107;
+        }
+
+        .status-dot.not_present {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .no-teachers {
+            text-align: center;
+            padding: 4rem;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .teacher-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .teacher-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .teacher-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Smart Faculty Status Indicator</h1>
+        <p class="subtitle">Emilio Aguinaldo College Cavite - Real-Time Faculty Availability</p>
+    </div>
+
+    <div class="clock" id="clock"></div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #28a745;"></span>
+            <span>Available</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #ffc107;"></span>
+            <span>Busy</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #dc3545;"></span>
+            <span>Not Present</span>
+        </div>
+    </div>
+
+    <div class="teacher-grid" id="teacherGrid">
+        {% if teachers %}
+            {% for teacher in teachers %}
+            <div class="teacher-card {{ teacher.status }}">
+                <div class="teacher-info">
+                    <div class="teacher-name">{{ teacher.user.get_full_name|default:teacher.user.username }}</div>
+                    {% if teacher.department %}
+                    <div class="teacher-department">{{ teacher.department }}{% if teacher.position %} - {{ teacher.position }}{% endif %}</div>
+                    {% endif %}
+                </div>
+                <div class="status-indicator {{ teacher.status }}">
+                    <span class="status-dot {{ teacher.status }}"></span>
+                    {{ teacher.get_status_display }}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-teachers">
+                No faculty members registered yet.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        Auto-refreshes every 10 seconds | Last updated: <span id="lastUpdate"></span>
+    </div>
+
+    <script>
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('clock').textContent = now.toLocaleString('en-US', options);
+        }
+
+        // Set last update time
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+        // Update clock every second
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Auto-refresh every 10 seconds (faster for TV display)
+        setTimeout(function() {
+            location.reload();
+        }, 10000);
+    </script>
+</body>
+</html>
