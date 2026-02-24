@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Teacher Registration - SFSI{% endblock %}
+{% block title %}Teacher Registration - EAC Cavite SFSI{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -20,6 +21,11 @@
     .register-header {
         text-align: center;
         margin-bottom: 2rem;
+    }
+
+    .register-header img {
+        height: 70px;
+        margin-bottom: 1rem;
     }
 
     .register-header h1 {
@@ -42,7 +48,7 @@
     }
 
     .form-group label .required {
-        color: #ef5350;
+        color: #d8172c;
     }
 
     .form-group input, .form-group select {
@@ -58,7 +64,7 @@
 
     .form-group input:focus, .form-group select:focus {
         outline: none;
-        border-color: #4fc3f7;
+        border-color: #d8172c;
     }
 
     .form-group input::placeholder {
@@ -92,7 +98,7 @@
     }
 
     .login-link a {
-        color: #4fc3f7;
+        color: #e63946;
         text-decoration: none;
     }
 
@@ -112,6 +118,7 @@
 <div class="register-container">
     <div class="register-card">
         <div class="register-header">
+            <img src="{% static 'images/school-logo.svg' %}" alt="EAC Logo">
             <h1>Teacher Registration</h1>
             <p>Create an account to manage your availability status</p>
         </div>
@@ -131,28 +138,23 @@
             </div>
 
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="juan.delacruz@eac.edu.ph">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" placeholder="juan.delacruz@eac.edu.ph" required>
             </div>
 
             <div class="form-group">
-                <label for="department">Department</label>
-                <select id="department" name="department">
+                <label for="department">Department <span class="required">*</span></label>
+                <select id="department" name="department" required>
                     <option value="">Select Department</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Information Technology">Information Technology</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Business Administration">Business Administration</option>
-                    <option value="Education">Education</option>
-                    <option value="Arts and Sciences">Arts and Sciences</option>
-                    <option value="Nursing">Nursing</option>
-                    <option value="Other">Other</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}">{{ dept.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="position">Position</label>
-                <input type="text" id="position" name="position" placeholder="Professor, Instructor, etc.">
+                <label for="position">Position <span class="required">*</span></label>
+                <input type="text" id="position" name="position" placeholder="Professor, Instructor, etc." required>
             </div>
 
             <hr style="border-color: rgba(255,255,255,0.1); margin: 1.5rem 0;">

@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.db import models
 from django.contrib.auth.models import User
-from .models import Teacher
+from .models import Teacher, Department
 
 
 def public_status(request):
@@ -19,7 +19,7 @@ def public_status(request):
         teachers = teachers.filter(
             models.Q(user__first_name__icontains=search_query) |
             models.Q(user__last_name__icontains=search_query) |
-            models.Q(department__icontains=search_query)
+            models.Q(department__name__icontains=search_query)
         )
 
     return render(request, 'faculty/public_status.html', {
@@ -72,6 +72,8 @@ def teacher_register(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
 
+    departments = Department.objects.all()
+
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
@@ -79,7 +81,7 @@ def teacher_register(request):
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         email = request.POST.get('email', '').strip()
-        department = request.POST.get('department', '').strip()
+        department_id = request.POST.get('department', '').strip()
         position = request.POST.get('position', '').strip()
 
         # Validation
@@ -101,8 +103,24 @@ def teacher_register(request):
         if not last_name:
             errors.append('Last name is required.')
 
-        if email and User.objects.filter(email=email).exists():
+        if not email:
+            errors.append('Email is required.')
+        elif User.objects.filter(email=email).exists():
             errors.append('Email already registered.')
+
+        if not department_id:
+            errors.append('Department is required.')
+
+        if not position:
+            errors.append('Position is required.')
+
+        # Get department instance if provided
+        department = None
+        if department_id:
+            try:
+                department = Department.objects.get(id=department_id)
+            except Department.DoesNotExist:
+                errors.append('Invalid department selected.')
 
         if errors:
             for error in errors:
@@ -124,13 +142,18 @@ def teacher_register(request):
             messages.success(request, 'Registration successful! Please log in.')
             return redirect('login')
 
-    return render(request, 'faculty/register.html')
+    return render(request, 'faculty/register.html', {'departments': departments})
 
 
 @login_required(login_url='login')
 def dashboard(request):
     """Teacher dashboard to update status"""
-    teacher = request.user.teacher
+    # Check if user has a teacher profile
+    try:
+        teacher = request.user.teacher
+    except Teacher.DoesNotExist:
+        messages.error(request, 'You do not have a teacher profile. Please contact admin or register as a teacher.')
+        return redirect('public_status')
 
     if request.method == 'POST':
         new_status = request.POST.get('status')
@@ -149,13 +172,13 @@ def dashboard(request):
 @csrf_exempt
 def api_all_status(request):
     """API endpoint to get all teacher statuses (for ESP32)"""
-    teachers = Teacher.objects.select_related('user').all()
+    teachers = Teacher.objects.select_related('user', 'department').all()
     data = {
         'teachers': [
             {
                 'id': t.id,
                 'name': t.user.get_full_name() or t.user.username,
-                'department': t.department,
+                'department': t.department.name if t.department else '',
                 'status': t.status,
                 'status_display': t.get_status_display(),
                 'color': t.get_status_color(),
@@ -170,11 +193,11 @@ def api_all_status(request):
 def api_teacher_status(request, teacher_id):
     """API endpoint to get single teacher status (for ESP32)"""
     try:
-        teacher = Teacher.objects.select_related('user').get(id=teacher_id)
+        teacher = Teacher.objects.select_related('user', 'department').get(id=teacher_id)
         data = {
             'id': teacher.id,
             'name': teacher.user.get_full_name() or teacher.user.username,
-            'department': teacher.department,
+            'department': teacher.department.name if teacher.department else '',
             'status': teacher.status,
             'status_display': teacher.get_status_display(),
             'color': teacher.get_status_color(),

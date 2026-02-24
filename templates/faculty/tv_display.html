@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Status Display</title>
+    <title>Faculty Status Display - EAC Cavite</title>
     <style>
         * {
             margin: 0;
@@ -21,27 +22,42 @@
 
         .header {
             text-align: center;
-            padding: 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
+            padding: 1.25rem 2rem;
+            background: linear-gradient(135deg, #d8172c 0%, #a01020 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .header img {
+            height: 70px;
+        }
+
+        .header-text {
+            text-align: left;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            color: #4fc3f7;
+            font-size: 1.75rem;
+            color: #fff;
+            line-height: 1.2;
         }
 
         .header .subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2rem;
-            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            margin-top: 0.25rem;
         }
 
         .clock {
             position: absolute;
-            top: 1.5rem;
+            top: 1.25rem;
             right: 2rem;
             font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
         }
 
         .legend {
@@ -49,7 +65,7 @@
             justify-content: center;
             gap: 3rem;
             padding: 1rem;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .legend-item {
@@ -70,7 +86,7 @@
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 1.5rem;
             padding: 2rem;
-            max-height: calc(100vh - 180px);
+            max-height: calc(100vh - 200px);
             overflow-y: auto;
         }
 
@@ -174,11 +190,19 @@
             bottom: 0;
             left: 0;
             right: 0;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
             padding: 0.75rem;
-            background: rgba(0, 0, 0, 0.3);
-            color: rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #d8172c 0%, #a01020 100%);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 1rem;
+        }
+
+        .footer img {
+            height: 30px;
+            opacity: 0.9;
         }
 
         /* Hide scrollbar but keep functionality */
@@ -198,8 +222,11 @@
 </head>
 <body>
     <div class="header">
-        <h1>Smart Faculty Status Indicator</h1>
-        <p class="subtitle">Emilio Aguinaldo College Cavite - Real-Time Faculty Availability</p>
+        <img src="{% static 'images/school-logo.svg' %}" alt="EAC Logo">
+        <div class="header-text">
+            <h1>Emilio Aguinaldo College Cavite Smart Faculty Status Indicator System</h1>
+            <p class="subtitle">Real-Time Faculty Availability</p>
+        </div>
     </div>
 
     <div class="clock" id="clock"></div>
@@ -243,7 +270,8 @@
     </div>
 
     <div class="footer">
-        Auto-refreshes every 10 seconds | Last updated: <span id="lastUpdate"></span>
+        <img src="{% static 'images/school-logo.svg' %}" alt="EAC Logo">
+        <span>Auto-refreshes every 10 seconds | Last updated: <span id="lastUpdate"></span></span>
     </div>
 
     <script>

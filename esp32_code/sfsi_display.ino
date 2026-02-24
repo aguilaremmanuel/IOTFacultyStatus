@@ -18,18 +18,18 @@
  */
 
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <TFT_eSPI.h>
 
 // ============== CONFIGURATION ==============
 // WiFi Settings - CHANGE THESE!
-const char* WIFI_SSID = "Cooper Family Wifi";
-const char* WIFI_PASSWORD = "Cooperthegreat";
+const char* WIFI_SSID = "YOUR_WIFI_SSID";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 
-// Server Settings - CHANGE THIS TO YOUR COMPUTER'S IP ADDRESS!
-const char* SERVER_IP = "92.168.18.129";
-const int SERVER_PORT = 8080;
+// Server Settings
+const char* SERVER_URL = "https://smartfacultystatus.pythonanywhere.com/api/status/";
 
 // Refresh interval (in milliseconds)
 const unsigned long REFRESH_INTERVAL = 5000;  // 5 seconds
@@ -424,14 +424,15 @@ void connectToWiFi() {
 
 // ============== API FUNCTIONS ==============
 void fetchAndDisplayStatus() {
+    WiFiClientSecure client;
     HTTPClient http;
 
-    // Build API URL
-    String url = "http://" + String(SERVER_IP) + ":" + String(SERVER_PORT) + "/api/status/";
+    // Skip certificate verification (for simplicity)
+    client.setInsecure();
 
-    Serial.println("Fetching: " + url);
+    Serial.println("Fetching: " + String(SERVER_URL));
 
-    http.begin(url);
+    http.begin(client, SERVER_URL);
     http.setTimeout(10000);  // 10 second timeout
 
     int httpCode = http.GET();

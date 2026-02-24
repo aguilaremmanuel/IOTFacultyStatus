@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Dashboard - SFSI{% endblock %}
+{% block title %}Dashboard - EAC Cavite SFSI{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -17,6 +18,11 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         text-align: center;
         margin-bottom: 2rem;
+    }
+
+    .welcome-card img {
+        height: 60px;
+        margin-bottom: 1rem;
     }
 
     .welcome-card h1 {
@@ -142,6 +148,7 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="welcome-card">
+        <img src="{% static 'images/school-logo.svg' %}" alt="EAC Logo">
         <h1>Welcome, {{ teacher.user.get_full_name|default:teacher.user.username }}!</h1>
         <p>Update your availability status below</p>
     </div>
