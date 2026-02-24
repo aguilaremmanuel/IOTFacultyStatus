@@ -22,17 +22,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <TFT_eSPI.h>
-
-// ============== CONFIGURATION ==============
-// WiFi Settings - CHANGE THESE!
-const char* WIFI_SSID = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
-
-// Server Settings
-const char* SERVER_URL = "https://smartfacultystatus.pythonanywhere.com/api/status/";
-
-// Refresh interval (in milliseconds)
-const unsigned long REFRESH_INTERVAL = 5000;  // 5 seconds
+#include "config.h"  // WiFi credentials and settings (create from config.example.h)
 
 // ============== DISPLAY SETUP ==============
 TFT_eSPI tft = TFT_eSPI();

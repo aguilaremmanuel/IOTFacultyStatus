@@ -19,6 +19,9 @@ ENV/
 .env.local
 .env.*.local
 
+# ESP32 config (contains WiFi credentials)
+esp32_code/config.h
+
 # Django
 *.log
 db.sqlite3
