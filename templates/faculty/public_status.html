@@ -159,6 +159,32 @@
         margin-top: 2rem;
         color: rgba(255, 255, 255, 0.5);
         font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .live-indicator {
+        width: 10px;
+        height: 10px;
+        background: #28a745;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .teacher-card.status-changed {
+        animation: highlight 0.5s ease;
+    }
+
+    @keyframes highlight {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); box-shadow: 0 0 20px rgba(216, 23, 44, 0.5); }
     }
 </style>
 {% endblock %}
@@ -196,18 +222,14 @@
 </div>
 
 {% if teachers %}
-<div class="teacher-grid">
+<div class="teacher-grid" id="teacher-grid">
     {% for teacher in teachers %}
-    <div class="teacher-card">
+    <div class="teacher-card" data-teacher-id="{{ teacher.id }}">
         <div class="teacher-header">
             <div>
                 <div class="teacher-name">{{ teacher.user.get_full_name|default:teacher.user.username }}</div>
-                {% if teacher.department %}
-                <div class="teacher-department">{{ teacher.department }}</div>
-                {% endif %}
-                {% if teacher.position %}
-                <div class="teacher-department">{{ teacher.position }}</div>
-                {% endif %}
+                <div class="teacher-department department-text">{{ teacher.department.name|default:"" }}</div>
+                <div class="teacher-department position-text">{{ teacher.position|default:"" }}</div>
             </div>
             <span class="status-badge status-{{ teacher.status }}">
                 {{ teacher.get_status_display }}
@@ -217,21 +239,54 @@
     {% endfor %}
 </div>
 {% else %}
-<div class="no-results">
-    <p>No faculty members found.</p>
+<div class="teacher-grid" id="teacher-grid">
+    <div class="no-results">
+        <p>No faculty members found.</p>
+    </div>
 </div>
 {% endif %}
 
 <div class="auto-refresh">
-    Page auto-refreshes every 30 seconds
+    <span class="live-indicator"></span> Live updates enabled
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Auto-refresh page every 30 seconds
-    setTimeout(function() {
-        location.reload();
-    }, 30000);
+    // Real-time status updates using AJAX polling
+    const statusDisplayMap = {
+        'available': 'Available',
+        'busy': 'Busy',
+        'not_present': 'Not Present'
+    };
+
+    function updateStatuses() {
+        fetch('/api/status/')
+            .then(response => response.json())
+            .then(data => {
+                data.teachers.forEach(teacher => {
+                    const card = document.querySelector(`[data-teacher-id="${teacher.id}"]`);
+                    if (card) {
+                        const badge = card.querySelector('.status-badge');
+                        const currentStatus = badge.className.match(/status-(\w+)/)?.[1];
+
+                        // Only update if status changed
+                        if (currentStatus !== teacher.status) {
+                            // Update badge class and text
+                            badge.className = `status-badge status-${teacher.status}`;
+                            badge.textContent = statusDisplayMap[teacher.status] || teacher.status_display;
+
+                            // Add highlight animation
+                            card.classList.add('status-changed');
+                            setTimeout(() => card.classList.remove('status-changed'), 500);
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching status:', error));
+    }
+
+    // Poll every 3 seconds
+    setInterval(updateStatuses, 3000);
 </script>
 {% endblock %}
