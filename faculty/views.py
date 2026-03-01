@@ -5,20 +5,25 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.db import models
+from django.db.models import Value
+from django.db.models.functions import Concat
 from django.contrib.auth.models import User
 from .models import Teacher, Department
 
 
 def public_status(request):
     """Public view for students to see all teacher statuses"""
-    teachers = Teacher.objects.select_related('user').all()
+    teachers = Teacher.objects.select_related('user', 'department').all()
 
     # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
-        teachers = teachers.filter(
+        teachers = teachers.annotate(
+            full_name=Concat('user__first_name', Value(' '), 'user__last_name')
+        ).filter(
             models.Q(user__first_name__icontains=search_query) |
             models.Q(user__last_name__icontains=search_query) |
+            models.Q(full_name__icontains=search_query) |
             models.Q(department__name__icontains=search_query)
         )
 
